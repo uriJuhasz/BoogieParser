@@ -3,14 +3,26 @@
 
 #include <map>
 #include <string>
+#include <list>
 using namespace std;
 
 class BoogieASTNode{};
 class BoogieTypeDeclaration;
 class BoogieAttributes;
 class BoogieTypeParameters;
-class BoogieProgram : public BoogieASTNode{
+class BoogieScope : BoogieASTNode {};
+class BoogieIdentifier final : BoogieASTNode{
+public:
+    BoogieIdentifier(const string& _id) : id(_id){}
+    const string id;
+};
+class BoogieProgram : public BoogieScope{
     map<string,BoogieTypeDeclaration> types;
+    list<unique_ptr<BoogieTypeDeclaration>> typeDeclarations;
+};
+class BoogieType : public BoogieASTNode {
+protected:
+    BoogieType(){}
 };
 class BoogieTypeDeclaration : public BoogieASTNode{
 public:
@@ -29,36 +41,45 @@ public:
     const BoogieType& synonym;
     const BoogieAttributes& attributes;
 };
-class BoogieNamedEntity;
-final class BoogieConstDeclaration : public BoogieNamedEntity{};
-final class BoogieFunctionDeclaration : public BoogieNamedEntity{};
-final class BoogieAxiomDeclaration : public BoogieNamedEntity{};
-final class BoogieProcedureDeclaration : public BoogieNamedEntity{};
-final class BoogieImplementationDeclaration : public BoogieNamedEntity{};
-
-class BoogieType : public BoogieASTNode {};
-final class BoogieNoType : public BoogieType{};
-class BoogieExpression : public BoogieASTNode {};
-
 class BoogieNamedEntity : public BoogieASTNode{
 public:
     const string name;
 protected:
     BoogieNamedEntity(const string& _name) : name(_name){}
-}
+};
+class BoogieConstDeclaration final : public BoogieNamedEntity{};
+class BoogieFunctionDeclaration final : public BoogieNamedEntity{};
+class BoogieAxiomDeclaration final : public BoogieNamedEntity{};
+class BoogieProcedureDeclaration final : public BoogieNamedEntity{};
+class BoogieImplementationDeclaration final : public BoogieNamedEntity{};
+
+class BoogieNoType final: public BoogieType{
+public:
+    static BoogieNoType* get(){
+        if (singleton==nullptr)
+            singleton = new BoogieNoType();
+        return singleton;
+    }
+private:
+    BoogieNoType(){};
+    static BoogieNoType* singleton;
+};
+class BoogieExpression : public BoogieASTNode {};
+
 class BoogieTypeVariable : public BoogieNamedEntity{
 public:
     BoogieTypeVariable(const string& _name) : BoogieNamedEntity(_name){}
 };
 class BoogieTypeParameters : public BoogieASTNode{
-    const list BoogieTypeVariable typeParameters;
-}
+    const list<BoogieTypeVariable> typeParameters;
+};
 
 ///////////////////////////////////////////////////////////
 //Attirbutes
+class BoogieAttribute;
 class BoogieAttributes : public BoogieASTNode {
     public:
-        list BoogieAttribute attributes;
+        list<BoogieAttribute> attributes;
 };
 class BoogieAttribute : public BoogieASTNode {
 public:
@@ -68,14 +89,18 @@ protected:
 };
 class BoogieStringAttribute : public BoogieAttribute{
     public:
-        BoogieStringAttribute(const string& _name, const string& _attribute) : BoogieAttribute(name), attributeString(_attribute){}
+        BoogieStringAttribute(const string& _name, const string& _attribute)
+            : BoogieAttribute(_name),
+              attributeString(_attribute){}
         const string attributeString;
-}
+};
 class BoogieExpressionAttribute : public BoogieAttribute{
     public:
-        BoogieStringAttribute(const string& _name, const BoogieExpression& _expression) : BoogieAttribute(name), expression(_expression){}
+        BoogieExpressionAttribute(const string& _name, const BoogieExpression& _expression)
+            : BoogieAttribute(_name),
+              expression(_expression){}
         const BoogieExpression& expression;
-}
+};
 ///////////////////////////////////////////////////////////
 
 #endif // BOOGIEAST_H_INCLUDED

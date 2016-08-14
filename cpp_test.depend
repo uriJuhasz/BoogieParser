@@ -4,8 +4,10 @@
 	<vector>
 	"BoogieParser.h"
 
-1470871073 /home/uri/projects/cpp_test/include/BoogieParser.h
+1471191319 /home/uri/projects/cpp_test/include/BoogieParser.h
 	<string>
+	<memory>
+	"../src/BoogieAST.h"
 
 1470871729 source:/home/uri/projects/cpp_test/src/BoogieParser.cpp
 	"BoogieParser.h"
@@ -14,4 +16,9 @@
 	<string>
 	<iostream>
 	<exception>
+
+1471192102 /home/uri/projects/cpp_test/src/BoogieAST.h
+	<map>
+	<string>
+	<list>
 

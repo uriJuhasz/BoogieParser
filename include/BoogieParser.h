@@ -2,6 +2,8 @@
 #define BOOGIEPARSER_H
 
 #include<string>
+#include<memory>
+#include "../src/BoogieAST.h"
 
-void parseBoogieFile(const std::string& bplFileName);
+unique_ptr<BoogieProgram> parseBoogieFile(const std::string& bplFileName);
 #endif // BOOGIEPARSER_H
