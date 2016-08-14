@@ -1,0 +1,17 @@
+# depslib dependency file v1.0
+1470871918 source:/home/uri/projects/cpp_test/main.cpp
+	<iostream>
+	<vector>
+	"BoogieParser.h"
+
+1470871073 /home/uri/projects/cpp_test/include/BoogieParser.h
+	<string>
+
+1470871729 source:/home/uri/projects/cpp_test/src/BoogieParser.cpp
+	"BoogieParser.h"
+	<istream>
+	<fstream>
+	<string>
+	<iostream>
+	<exception>
+
