@@ -9,6 +9,8 @@
 #include <unordered_set>
 #include <vector>
 #include <locale>
+#include <tuple>
+#include <sstream>
 
 #include "BoogieAST.h"
 using namespace std;
@@ -17,13 +19,35 @@ class Position final{
 public:
     typedef size_t Size;
     Position(Size _line,Size _col) : line(_line),col(_col){}
-    const Size line,col;
+    Size line;
+    Size col;
+    string toString() const{
+    	stringstream s;
+    	s << line + ":" + col;
+    	return s.str();
+    }
 };
 class ParserBase {
 public:
-    class ParserException : public exception{};
-    class ReadPastEOFException : public ParserException{};
-    class StreamReadException : public ParserException{};
+    class ParserException : public exception{
+    	public:
+    		ParserException(const Position _pos) : pos(_pos){};
+    		const Position pos;
+    		virtual string message();
+
+    };
+    class ReadPastEOFException : public ParserException{
+    	public:
+    		ReadPastEOFException(const Position _pos) : ParserException(_pos){}
+    		virtual string message(){return "Read past EOF at " + pos.toString();}
+    };
+    class StreamReadException : public ParserException{public:StreamReadException(const Position _pos) : ParserException(_pos){}};
+    class ParserMismatchException : public ParserException{
+    	public:
+    		ParserMismatchException(const Position _pos,const string& _expected) : ParserException(_pos), expected(_expected){}
+    		const string expected;
+    		virtual string message(){return "Syntax error at " + pos.toString() + " expected \"" + expected + "\"";}
+	};
 protected:
     typedef char Char;
     typedef streamsize Size;
@@ -49,23 +73,34 @@ protected:
         if (bufDone())
             readToBuf();
         if (done())
-            throw new ReadPastEOFException();
+            throw new ReadPastEOFException(curPos);
         Char c = buf[bufPos];
         return c;
     }
 
     void parseString(const string& s)
     {
+    	auto startPos = curPos;
+    	unsigned int i = 0;
+    	while (!done() && i<s.length())
+    	{
+    		Char c = getChar();
+    		if (c!=s[i])
+    			throw new ParserMismatchException(startPos,s);
 
+    	}
     }
+
+    Position& curPosition() {return curPos;}
 
 //    class
 private:
+    const locale loc;
     bool isEOL(Char c){
     	return c=='\n';
     }
     bool isWhiteSpace(Char c){
-    	return isw
+    	return isspace(c,loc);
     }
     typedef tuple<Size,Position> CPos;
     void pushPos()
@@ -74,15 +109,16 @@ private:
     }
     void popPos()
     {
-        auto t = posStack.pop();
-        bufPos = t.get(0);
-        curPos = t.get(1);
+        tuple<Size,Position> t = posStack.top();
+        posStack.pop();
+        bufPos = get<0>(t);
+        curPos = get<1>(t);
     }
     void discardPopPos(){
         posStack.pop();
     }
 
-    Position curPos(0,0);
+    Position curPos = Position(0,0);
 
     void skipWSs()
     {
@@ -95,9 +131,10 @@ private:
     }
     void readToBuf(){
         while (!f.eof() && !f.good()){
-            int c = f.get();
+        	Position pos = curPos;
+            Char c = static_cast<Char>(f.get());
             if (!f.good())
-                throw new StreamReadException();
+                throw new StreamReadException(pos);
             buf.push_back(c);
         }
     }
