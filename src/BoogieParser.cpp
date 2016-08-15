@@ -6,6 +6,7 @@
 #include <exception>
 #include <memory>
 #include <stack>
+#include <unordered_set>
 
 #include "BoogieAST.h"
 using namespace std;
@@ -17,6 +18,9 @@ class BoogieParser final
         ~BoogieParser(){}
         unique_ptr<BoogieProgram> parse();
 
+        unique_ptr<BoogieProgram> getProgram(){
+            return move(program);
+        }
     protected:
 
         bool done();
@@ -30,13 +34,20 @@ class BoogieParser final
         void parseProcedureDeclaration();
         void parseImplementationDeclaration();
 
+        unique_ptr<BoogieIdentifier> parseIdentifier();
+        unique_ptr<BoogieTypeParameterList> parseTypeParameterList();
+        unique_ptr<BoogieType> parseType();
+        unique_ptr<BoogieAttribute> parseBoogieAttribute();
+
         bool peekReservedWord(const string&);
         void parseReservedWord(const string &);
-        BoogieIdentifier parseIdentifier();
-        list<BoogieIdentifier> parseIdentifierList();
-        BoogieType parseType();
+        void parseSemicolon();
+        bool tryParseOpenCurly();
+        bool tryParseCloseCurly();
+        bool tryParseEqualSign();
 
-        BoogieAttributes parseAttributes();
+        unique_ptr<BoogieAttributes> parseAttributes();
+
     private:
         ifstream& f;
         string buf;
@@ -52,6 +63,16 @@ class BoogieParser final
         const string axiomDeclarationRW = "axiom";
         const string procedureDeclarationRW = "procedure";
         const string implementationDeclarationRW = "implementation";
+
+        const unordered_set<string> reservedWords{
+            typeDeclarationRW,
+            varDeclarationRW,
+            constDeclarationRW,
+            functionDeclarationRW,
+            axiomDeclarationRW,
+            procedureDeclarationRW,
+            implementationDeclarationRW
+        };
 };
 
 unique_ptr<BoogieProgram> BoogieParser::parse(){
@@ -88,18 +109,23 @@ void BoogieParser::parseGlobalDeclaration(){
 void BoogieParser::parseTypeDeclaration(){
     parseReservedWord(typeDeclarationRW);
     auto attributes = parseAttributes();
-    const BoogieIdentifier name = parseIdentifier();
-    auto typeParameters = parseIdentifierList();
-    auto synonym = (tryParse(equalityRW)) ? parseType() : BoogieNoType::get();
-    parseSemiColon();
-    program->typeDeclarations.push_back(new BoogieTypeDeclaration(name,attributes,typeParameters,synonym));
+    auto name = parseIdentifier();
+    auto typeParameters = parseTypeParameterList();
+    unique_ptr<BoogieTypeDeclaration> decl;
+    if (tryParseEqualSign()){
+        auto synonym = parseType();
+        decl = make_unique<BoogieTypeSynonymDeclaration>(name,attributes,typeParameters,synonym);
+    }else
+        decl = make_unique<BoogieTypeConstructorDeclaration>(name,attributes,typeParameters);
+    parseSemicolon();
+    program->addTypeDeclaration(move(decl));
 }
 
 unique_ptr<BoogieAttributes> BoogieParser::parseAttributes(){
-    unique_ptr<BoogieAttributes> r = new BoogieAttributes();
+    auto r = make_unique<BoogieAttributes>();
     if (tryParseOpenCurly()){
         while (!tryParseCloseCurly()){
-            r->push_back(parseBoogieAttribute());
+            r->attributes.push_back(parseBoogieAttribute());
         }
     }
     return r;
@@ -109,11 +135,12 @@ class IOException : exception{
     public:IOException(const string _errorMessage) : errorMessage(_errorMessage){}
     const string errorMessage;
 };
-void parseBoogieFile(const string& bplFileName){
+unique_ptr<BoogieProgram> parseBoogieFile(const string& bplFileName){
     ifstream f(bplFileName);
     if (!f.is_open())
         throw new IOException("Cannot open file \"" + bplFileName + "\"");
 
     BoogieParser parser(f);
     parser.parse();
+    return parser.getProgram();
 }
