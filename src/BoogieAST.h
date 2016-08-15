@@ -34,7 +34,7 @@ public:
 };
 class BoogieProgram : public BoogieScope{
 public:
-    void addTypeDeclaration(unique_ptr<BoogieTypeDeclaration> d){typeDeclarations.push_back(move(d));}
+    void addTypeDeclaration(unique_ptr<BoogieTypeDeclaration>& d){typeDeclarations.push_back(move(d));}
 private:
     map<string,BoogieTypeDeclaration> types;
     list<unique_ptr<BoogieTypeDeclaration>> typeDeclarations;

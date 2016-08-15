@@ -7,14 +7,113 @@
 #include <memory>
 #include <stack>
 #include <unordered_set>
+#include <vector>
+#include <locale>
 
 #include "BoogieAST.h"
 using namespace std;
 
-class BoogieParser final
+class Position final{
+public:
+    typedef size_t Size;
+    Position(Size _line,Size _col) : line(_line),col(_col){}
+    const Size line,col;
+};
+class ParserBase {
+public:
+    class ParserException : public exception{};
+    class ReadPastEOFException : public ParserException{};
+    class StreamReadException : public ParserException{};
+protected:
+    typedef char Char;
+    typedef streamsize Size;
+    ParserBase(istream& _f) :f(_f){
+        bufPos = 0;
+    }
+    virtual ~ParserBase(){}
+
+    bool done() const{
+        return bufDone() && f.eof();
+    }
+
+    Char getChar(){
+        Char c = peekChar();
+        bufPos++;
+        if (isEOL(c))
+            curPos = Position(curPos.line+1,0);
+        else
+            curPos = Position(curPos.line,curPos.col+1);
+        return c;
+    }
+    Char peekChar(){
+        if (bufDone())
+            readToBuf();
+        if (done())
+            throw new ReadPastEOFException();
+        Char c = buf[bufPos];
+        return c;
+    }
+
+    void parseString(const string& s)
+    {
+
+    }
+
+//    class
+private:
+    bool isEOL(Char c){
+    	return c=='\n';
+    }
+    bool isWhiteSpace(Char c){
+    	return isw
+    }
+    typedef tuple<Size,Position> CPos;
+    void pushPos()
+    {
+        posStack.push(tuple<Size,Position>(bufPos,curPos));
+    }
+    void popPos()
+    {
+        auto t = posStack.pop();
+        bufPos = t.get(0);
+        curPos = t.get(1);
+    }
+    void discardPopPos(){
+        posStack.pop();
+    }
+
+    Position curPos(0,0);
+
+    void skipWSs()
+    {
+        while (!done() && isWhiteSpace(peekChar()))
+            getChar();
+    }
+
+    bool bufDone() const{
+        return bufPos==static_cast<Size>(buf.size());
+    }
+    void readToBuf(){
+        while (!f.eof() && !f.good()){
+            int c = f.get();
+            if (!f.good())
+                throw new StreamReadException();
+            buf.push_back(c);
+        }
+    }
+
+
+    istream& f;
+    vector<Char> buf;
+    Size bufPos = 0;
+
+    stack<CPos> posStack;
+};
+
+class BoogieParser final : public ParserBase
 {
     public:
-        BoogieParser(ifstream& _f) :f(_f){}
+        BoogieParser(istream& _f) :ParserBase(_f){}
         ~BoogieParser(){}
         unique_ptr<BoogieProgram> parse();
 
@@ -23,7 +122,6 @@ class BoogieParser final
         }
     protected:
 
-        bool done();
 //        typedef void (BoogieParser::*PFunc)();
         void parseGlobalDeclaration();
         void parseTypeDeclaration();
@@ -39,8 +137,8 @@ class BoogieParser final
         unique_ptr<BoogieType> parseType();
         unique_ptr<BoogieAttribute> parseBoogieAttribute();
 
-        bool peekReservedWord(const string&);
         void parseReservedWord(const string &);
+        bool tryParseReservedWord(const string &);
         void parseSemicolon();
         bool tryParseOpenCurly();
         bool tryParseCloseCurly();
@@ -49,8 +147,6 @@ class BoogieParser final
         unique_ptr<BoogieAttributes> parseAttributes();
 
     private:
-        ifstream& f;
-        string buf;
 
         unique_ptr<BoogieProgram> program;
         stack<BoogieScope*> scopeStack;
@@ -90,24 +186,23 @@ unique_ptr<BoogieProgram> BoogieParser::parse(){
 }
 
 void BoogieParser::parseGlobalDeclaration(){
-    if (peekReservedWord(typeDeclarationRW))
+    if (tryParseReservedWord(typeDeclarationRW))
         parseTypeDeclaration();
-    else if (peekReservedWord(constDeclarationRW))
+    else if (tryParseReservedWord(constDeclarationRW))
         parseConstDeclaration();
-    else if (peekReservedWord(varDeclarationRW))
+    else if (tryParseReservedWord(varDeclarationRW))
         parseVariableDeclaration();
-    else if (peekReservedWord(functionDeclarationRW))
+    else if (tryParseReservedWord(functionDeclarationRW))
         parseFunctionDeclaration();
-    else if (peekReservedWord(axiomDeclarationRW))
+    else if (tryParseReservedWord(axiomDeclarationRW))
         parseAxiom();
-    else if (peekReservedWord(procedureDeclarationRW))
+    else if (tryParseReservedWord(procedureDeclarationRW))
         parseProcedureDeclaration();
-    else if (peekReservedWord(implementationDeclarationRW))
+    else if (tryParseReservedWord(implementationDeclarationRW))
         parseImplementationDeclaration();
 }
 
 void BoogieParser::parseTypeDeclaration(){
-    parseReservedWord(typeDeclarationRW);
     auto attributes = parseAttributes();
     auto name = parseIdentifier();
     auto typeParameters = parseTypeParameterList();
@@ -118,7 +213,7 @@ void BoogieParser::parseTypeDeclaration(){
     }else
         decl = make_unique<BoogieTypeConstructorDeclaration>(name,attributes,typeParameters);
     parseSemicolon();
-    program->addTypeDeclaration(move(decl));
+    program->addTypeDeclaration(decl);
 }
 
 unique_ptr<BoogieAttributes> BoogieParser::parseAttributes(){

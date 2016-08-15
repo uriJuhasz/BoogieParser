@@ -10,9 +10,19 @@
 				<Option output="bin/Debug/cpp_test" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
-				<Option compiler="gcc" />
+				<Option compiler="clang" />
+				<Option projectCompilerOptionsRelation="1" />
 				<Compiler>
+					<Add option="-Wnon-virtual-dtor" />
+					<Add option="-Wbind-to-temporary-copy" />
+					<Add option="-Wambiguous-member-template" />
+					<Add option="-Wextra-tokens" />
+					<Add option="-pedantic-errors" />
+					<Add option="-pedantic" />
+					<Add option="-Wall" />
+					<Add option="-std=c++14" />
 					<Add option="-g" />
+					<Add directory="include" />
 				</Compiler>
 			</Target>
 			<Target title="Release">
@@ -22,6 +32,8 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-O2" />
+					<Add option="-std=c++14" />
+					<Add directory="include" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -29,10 +41,31 @@
 			</Target>
 		</Build>
 		<Compiler>
+			<Add option="-Wnon-virtual-dtor" />
+			<Add option="-Wshadow" />
+			<Add option="-Winit-self" />
+			<Add option="-Wredundant-decls" />
+			<Add option="-Wcast-align" />
+			<Add option="-Wundef" />
+			<Add option="-Wfloat-equal" />
+			<Add option="-Winline" />
+			<Add option="-Wunreachable-code" />
+			<Add option="-Wmissing-declarations" />
+			<Add option="-Wmissing-include-dirs" />
+			<Add option="-Wswitch-enum" />
+			<Add option="-Wswitch-default" />
+			<Add option="-Wzero-as-null-pointer-constant" />
+			<Add option="-Wmain" />
+			<Add option="-pedantic" />
+			<Add option="-Wextra" />
 			<Add option="-Wall" />
+			<Add option="-std=c++14" />
 			<Add option="-fexceptions" />
 		</Compiler>
+		<Unit filename="include/BoogieParser.h" />
 		<Unit filename="main.cpp" />
+		<Unit filename="src/BoogieAST.h" />
+		<Unit filename="src/BoogieParser.cpp" />
 		<Extensions>
 			<code_completion />
 			<debugger />
