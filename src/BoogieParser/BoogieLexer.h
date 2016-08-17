@@ -13,7 +13,7 @@
 
 namespace BoogieParser {
 
-	class BoogieToken{
+	class Token{
 	public:
 		enum class Kind{
 			typeRW,
@@ -74,7 +74,7 @@ namespace BoogieParser {
 			assign
 		};
 
-		BoogieToken(Kind _kind, const std::string& _text,const Position& _pos)
+		Token(Kind _kind, const std::string& _text,const Position& _pos)
 			: kind(_kind), text(_text), pos(_pos)
 			  {}
 		const Kind kind;
@@ -87,7 +87,15 @@ namespace BoogieParser {
 		BoogieLexer(std::istream& i);
 		virtual ~BoogieLexer();
 
+		bool eof();
+		Position curPos();
 
+		Token curToken();
+		void nextToken();
+	private:
+		Token* _curToken;
+		void getToken();
+		void ensureNotDone();
 	};
 
 } /* namespace BoogieParser */
