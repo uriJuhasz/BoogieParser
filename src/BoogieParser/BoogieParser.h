@@ -5,5 +5,7 @@
 #include<memory>
 #include "../src/BoogieAST.h"
 
-unique_ptr<BoogieProgram> parseBoogieFile(const std::string& bplFileName);
+namespace BoogieParser{
+	std::unique_ptr<BoogieAST::BoogieProgram> parseBoogieFile(const std::string& bplFileName);
+}//namespace
 #endif // BOOGIEPARSER_H
