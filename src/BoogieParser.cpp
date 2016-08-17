@@ -80,6 +80,7 @@ protected:
 
     void parseString(const string& s)
     {
+    	skipWSs();
     	auto startPos = curPos;
     	unsigned int i = 0;
     	while (!done() && i<s.length())
@@ -91,6 +92,20 @@ protected:
     	}
     }
 
+    void tryParseString(const string& s)
+    {
+    	skipWSs();
+    	auto startPos = curPos;
+    	push
+    	unsigned int i = 0;
+    	while (!done() && i<s.length())
+    	{
+    		Char c = getChar();
+    		if (c!=s[i])
+    			throw new ParserMismatchException(startPos,s);
+
+    	}
+    }
     Position& curPosition() {return curPos;}
 
 //    class
