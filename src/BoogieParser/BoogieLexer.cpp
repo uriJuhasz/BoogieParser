@@ -1,10 +1,3 @@
-/*
- * BoogieLexer.cpp
- *
- *  Created on: Aug 17, 2016
- *      Author: uri
- */
-
 #include "BoogieLexer.h"
 
 namespace BoogieParser {
@@ -19,3 +12,24 @@ BoogieLexer::~BoogieLexer() {
 }
 
 } /* namespace BoogieParser */
+
+
+
+const std::locale loc;
+bool isEOL(Char c){
+	return c=='\n';
+}
+bool isWhiteSpace(Char c){
+	return isspace(c,loc);
+}
+typedef tuple<Size,Position> CPos;
+{
+	posStack.push(tuple<Size,Position>(bufPos,curPos));
+}
+
+void skipWSs()
+{
+	while (!done() && isWhiteSpace(peekChar()))
+		getChar();
+}
+

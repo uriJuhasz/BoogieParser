@@ -1,6 +1,6 @@
 #include <iostream>
 #include <vector>
-#include "include/BoogieParser.h"
+#include "BoogieParser/BoogieParser.h"
 
 using namespace std;
 

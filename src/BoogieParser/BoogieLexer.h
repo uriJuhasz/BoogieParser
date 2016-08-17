@@ -15,7 +15,7 @@ namespace BoogieParser {
 
 	class BoogieToken{
 	public:
-		typedef enum class Kind{
+		enum class Kind{
 			typeRW,
 			varRW,
 			constRW,
@@ -82,10 +82,12 @@ namespace BoogieParser {
 		const Position pos;
 	};
 
-	class BoogieLexer: public ParserBase {
-	protected:
-		BoogieLexer();
+	class BoogieLexer: private ParserBase {
+	public:
+		BoogieLexer(std::istream& i);
 		virtual ~BoogieLexer();
+
+
 	};
 
 } /* namespace BoogieParser */
