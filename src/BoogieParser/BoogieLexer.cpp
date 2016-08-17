@@ -5,7 +5,7 @@
  *      Author: uri
  */
 
-#include <BoogieLexer.h>
+#include "BoogieLexer.h"
 
 namespace BoogieParser {
 
