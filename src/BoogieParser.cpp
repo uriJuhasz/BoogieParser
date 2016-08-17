@@ -1,4 +1,4 @@
-#include "BoogieParser.h"
+#include "../include/BoogieParser.h"
 #include <istream>
 #include <fstream>
 #include <string>
@@ -92,19 +92,20 @@ protected:
     	}
     }
 
-    void tryParseString(const string& s)
+    bool tryParseString(const string &s)
     {
-    	skipWSs();
-    	auto startPos = curPos;
-    	push
-    	unsigned int i = 0;
-    	while (!done() && i<s.length())
-    	{
-    		Char c = getChar();
-    		if (c!=s[i])
-    			throw new ParserMismatchException(startPos,s);
-
-    	}
+        pushPos();
+        bool r = true;
+        try {
+            parseString(s);
+        } catch (ParserMismatchException &) {
+            r = false;
+        }
+        if (r)
+            discardPopPos();
+        else
+            popPos();
+        return r;
     }
     Position& curPosition() {return curPos;}
 
@@ -238,19 +239,19 @@ unique_ptr<BoogieProgram> BoogieParser::parse(){
 }
 
 void BoogieParser::parseGlobalDeclaration(){
-    if (tryParseReservedWord(typeDeclarationRW))
+    if (tryParseString(typeDeclarationRW))
         parseTypeDeclaration();
-    else if (tryParseReservedWord(constDeclarationRW))
+    else if (tryParseString(constDeclarationRW))
         parseConstDeclaration();
-    else if (tryParseReservedWord(varDeclarationRW))
+    else if (tryParseString(varDeclarationRW))
         parseVariableDeclaration();
-    else if (tryParseReservedWord(functionDeclarationRW))
+    else if (tryParseString(functionDeclarationRW))
         parseFunctionDeclaration();
-    else if (tryParseReservedWord(axiomDeclarationRW))
+    else if (tryParseString(axiomDeclarationRW))
         parseAxiom();
-    else if (tryParseReservedWord(procedureDeclarationRW))
+    else if (tryParseString(procedureDeclarationRW))
         parseProcedureDeclaration();
-    else if (tryParseReservedWord(implementationDeclarationRW))
+    else if (tryParseString(implementationDeclarationRW))
         parseImplementationDeclaration();
 }
 
