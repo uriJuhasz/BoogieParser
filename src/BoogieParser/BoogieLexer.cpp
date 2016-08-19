@@ -1,105 +1,116 @@
 #include "BoogieLexer.h"
+#include "../util/Trie.h"
 #include <cassert>
+
 using namespace std;
 
 namespace BoogieParser {
 
-	BoogieLexer::BoogieLexer(istream& i)
-		: ParserBase(i), _curToken(nullptr)
-	{
-	}
+    BoogieLexer::BoogieLexer(istream &i)
+            : ParserBase(i), _curToken(nullptr) {
+    }
 
-	BoogieLexer::~BoogieLexer() {
-		if (_curToken!=nullptr)
-			delete _curToken;
-	}
+    BoogieLexer::~BoogieLexer() {
+        if (_curToken != nullptr)
+            delete _curToken;
+    }
 
-	void BoogieLexer::ensureNotDone()
-	{
-		if (done())
-			throw new ReadPastEOFException(curPos());
-	}
-	Token BoogieLexer::curToken(){
-		ensureNotDone();
-		if (!_curToken)
-			getToken();
-		return *_curToken;
-	}
+    void BoogieLexer::ensureNotDone() {
+        if (done())
+            throw new ReadPastEOFException(curPos());
+    }
 
-	void BoogieLexer::nextToken()
-	{
-		getToken();
-	}
+    Token BoogieLexer::curToken() {
+        ensureNotDone();
+        if (!_curToken)
+            getToken();
+        return *_curToken;
+    }
 
-	bool isSimpleIdentifierStart(BoogieLexer::Char c){
-		return
-				(c >= 'a' && c < 'z')
-				|| (c >= 'A' && c < 'Z')
-				|| (c=='_')
-				|| (c=='$')
-				|| (c=='%')
-				|| (c=='.')
-				|| (c=='#')
-				|| (c=='\'')
-				|| (c=='`')
-				|| (c=='~')
-				|| (c=='^')
-				|| (c=='\\')
-				|| (c=='?');
-	}
-	bool isSimpleIdentifierChar(BoogieLexer::Char c){
-		return isSimpleIdentifierStart(c);
-	}
-	bool isQuotedIdentifierStart(BoogieLexer::Char c){
-		return c=='|';
-	}
-	bool isStringLiteralStart(BoogieLexer::Char c){
-		return c=='"';
-	}
-	bool isNumberStart(BoogieLexer::Char c){
-		return c>='0' && c<='9';
-	}
+    void BoogieLexer::nextToken() {
+        getToken();
+    }
 
-	void BoogieLexer::getToken(){
-		skipWSs();
-		ensureNotDone();
-		auto c = curChar();
-		if (isSimpleIdentifierStart(c))
-			getSimpleIdentifier();
-		else if (isQuotedIdentifierStart(c))
-			getQuotedIdentifier();
-		else if (isStringLiteralStart(c))
-			getStringLiteral();
-		else if (isNumberStart(c))
-			getNumber();
-		else
-			getSymbol();
-	}
+    bool isSimpleIdentifierStart(BoogieLexer::Char c) {
+        return
+                (c >= 'a' && c < 'z')
+                || (c >= 'A' && c < 'Z')
+                || (c == '_')
+                || (c == '$')
+                || (c == '%')
+                || (c == '.')
+                || (c == '#')
+                || (c == '\'')
+                || (c == '`')
+                || (c == '~')
+                || (c == '^')
+                || (c == '\\')
+                || (c == '?');
+    }
 
-	void BoogieLexer::startToken(){
-		assert(!curTokenStarted);
-		curTokenStartPos = curPos();
-		curTokenText = "";
-		curTokenStarted=true;
-	}
-	void BoogieLexer::endToken(Token::Kind kind){
-		assert(curTokenStarted);
-		curTokenStarted=false;
-		_curToken = new Token(kind,curTokenText,curTokenStartPos,curTokenEndPos);
-	}
-	BoogieLexer::Char BoogieLexer::getTokenChar(){
-		assert(curTokenStarted);
-		curTokenEndPos = curPos();
-		return getChar();
-	}
-/*	const unordered_map<string,Token::Kind> rwMap;
-	void BoogieLexer::getSimpleIdentifier(){
-		startToken();
-		while (isSimpleIdentifierChar(curChar()))
-			getTokenChar();
+    bool isSimpleIdentifierChar(BoogieLexer::Char c) {
+        return isSimpleIdentifierStart(c);
+    }
 
-		endToken()
-	}*/
+    bool isQuotedIdentifierStart(BoogieLexer::Char c) {
+        return c == '|';
+    }
+
+    bool isStringLiteralStart(BoogieLexer::Char c) {
+        return c == '"';
+    }
+
+    bool isNumberStart(BoogieLexer::Char c) {
+        return c >= '0' && c <= '9';
+    }
+
+    void BoogieLexer::getToken() {
+        skipWSs();
+        ensureNotDone();
+        auto c = curChar();
+        if (isSimpleIdentifierStart(c))
+            getSimpleIdentifier();
+        else if (isQuotedIdentifierStart(c))
+            getQuotedIdentifier();
+        else if (isStringLiteralStart(c))
+            getStringLiteral();
+        else if (isNumberStart(c))
+            getNumber();
+        else
+            getSymbol();
+    }
+
+    void BoogieLexer::startToken() {
+        assert(!curTokenStarted);
+        curTokenStartPos = curPos();
+        curTokenText = "";
+        curTokenStarted = true;
+    }
+
+    void BoogieLexer::endToken(Token::Kind kind) {
+        assert(curTokenStarted);
+        curTokenStarted = false;
+        _curToken = new Token(kind, curTokenText, curTokenStartPos, curTokenEndPos);
+    }
+
+    BoogieLexer::Char BoogieLexer::getTokenChar() {
+        assert(curTokenStarted);
+        curTokenEndPos = curPos();
+        return getChar();
+    }
+
+    const Trie<BoogieLexer::Char, Token::Kind> rwMap{
+            {"var",   Token::Kind::varRW},
+            {"const", Token::Kind::constRW}
+    };
+
+    void BoogieLexer::getSimpleIdentifier() {
+        startToken();
+        while (isSimpleIdentifierChar(curChar()))
+            getTokenChar();
+
+        endToken(rwMap.getOrElse(curTokenText, Token::Kind::identifier));
+    }
 
 } /* namespace BoogieParser */
 
