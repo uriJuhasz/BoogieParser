@@ -28,14 +28,15 @@ namespace BoogieParser {
 
 			assertRW,
 			assumeRW,
-			breakRW,
-			callRW,
+            havocRW,
 			ifRW,
 			thenRW,
 			elseRW,
 			whileRW,
 			returnRW,
-			havocRW,
+            callRW,
+            breakRW,
+            gotoRW,
 
 			ensuresRW,
 			requiresRW,

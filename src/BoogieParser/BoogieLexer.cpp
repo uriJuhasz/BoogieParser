@@ -100,8 +100,44 @@ namespace BoogieParser {
     }
 
     const Trie<BoogieLexer::Char, Token::Kind> rwMap{
-            {"var",   Token::Kind::varRW},
-            {"const", Token::Kind::constRW}
+            {"type",           Token::Kind::typeRW},
+            {"var",            Token::Kind::varRW},
+            {"const",          Token::Kind::constRW},
+            {"procedure",      Token::Kind::procedureRW},
+            {"implementation", Token::Kind::implementationRW},
+            {"axiom",          Token::Kind::axiomRW},
+            {"function",       Token::Kind::functionRW},
+
+            {"returns",        Token::Kind::returnsRW},
+
+            {"assert",         Token::Kind::assertRW},
+            {"assume",         Token::Kind::assumeRW},
+            {"break",          Token::Kind::breakRW},
+            {"call",           Token::Kind::callRW},
+            {"if",             Token::Kind::ifRW},
+            {"then",           Token::Kind::thenRW},
+            {"else",           Token::Kind::elseRW},
+            {"while",          Token::Kind::whileRW},
+            {"return",         Token::Kind::returnRW},
+            {"havoc",          Token::Kind::havocRW},
+            {"goto",           Token::Kind::gotoRW},
+
+            {"ensures",        Token::Kind::ensuresRW},
+            {"requires",       Token::Kind::requiresRW},
+            {"invariant",      Token::Kind::invariantRW},
+            {"modifies",       Token::Kind::modifiesRW},
+
+            {"where",          Token::Kind::whereRW},
+
+            {"forall",         Token::Kind::forallRW},
+            {"exists",         Token::Kind::existsRW},
+
+            {"finite",         Token::Kind::finiteRW},
+            {"free",           Token::Kind::freeRW},
+
+
+            {"bool",           Token::Kind::boolRW},
+            {"int",            Token::Kind::intRW}
     };
 
     void BoogieLexer::getSimpleIdentifier() {
