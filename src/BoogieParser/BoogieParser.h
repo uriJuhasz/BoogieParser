@@ -3,7 +3,7 @@
 
 #include<string>
 #include<memory>
-#include "../src/BoogieAST.h"
+#include "../BoogieAST/BoogieAST.h"
 
 namespace BoogieParser{
 	std::unique_ptr<BoogieAST::BoogieProgram> parseBoogieFile(const std::string& bplFileName);

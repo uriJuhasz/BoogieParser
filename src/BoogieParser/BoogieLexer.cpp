@@ -1,4 +1,5 @@
 #include "BoogieLexer.h"
+#include <cassert>
 using namespace std;
 
 namespace BoogieParser {
@@ -10,7 +11,7 @@ namespace BoogieParser {
 
 	BoogieLexer::~BoogieLexer() {
 		if (_curToken!=nullptr)
-			delete curToken();
+			delete _curToken;
 	}
 
 	void BoogieLexer::ensureNotDone()
@@ -30,14 +31,75 @@ namespace BoogieParser {
 		getToken();
 	}
 
-	void BoogieLexer::getToken(){
-		ensureNotDone();
-		auto startPos = curPos();
-		auto c = curChar();
-		switch (c){
-			case '(' : getChar(); ,setToken(new Token(leftParens,startPos)))
-		}
+	bool isSimpleIdentifierStart(BoogieLexer::Char c){
+		return
+				(c >= 'a' && c < 'z')
+				|| (c >= 'A' && c < 'Z')
+				|| (c=='_')
+				|| (c=='$')
+				|| (c=='%')
+				|| (c=='.')
+				|| (c=='#')
+				|| (c=='\'')
+				|| (c=='`')
+				|| (c=='~')
+				|| (c=='^')
+				|| (c=='\\')
+				|| (c=='?');
 	}
+	bool isSimpleIdentifierChar(BoogieLexer::Char c){
+		return isSimpleIdentifierStart(c);
+	}
+	bool isQuotedIdentifierStart(BoogieLexer::Char c){
+		return c=='|';
+	}
+	bool isStringLiteralStart(BoogieLexer::Char c){
+		return c=='"';
+	}
+	bool isNumberStart(BoogieLexer::Char c){
+		return c>='0' && c<='9';
+	}
+
+	void BoogieLexer::getToken(){
+		skipWSs();
+		ensureNotDone();
+		auto c = curChar();
+		if (isSimpleIdentifierStart(c))
+			getSimpleIdentifier();
+		else if (isQuotedIdentifierStart(c))
+			getQuotedIdentifier();
+		else if (isStringLiteralStart(c))
+			getStringLiteral();
+		else if (isNumberStart(c))
+			getNumber();
+		else
+			getSymbol();
+	}
+
+	void BoogieLexer::startToken(){
+		assert(!curTokenStarted);
+		curTokenStartPos = curPos();
+		curTokenText = "";
+		curTokenStarted=true;
+	}
+	void BoogieLexer::endToken(Token::Kind kind){
+		assert(curTokenStarted);
+		curTokenStarted=false;
+		curToken = new Token(kind,curTokenText,curTokenStartPos,curTokenEndPos);
+	}
+	void BoogieLexer::getTokenChar(){
+		std::assert(curTokenStarted);
+		curTokenEndPos = curPos();
+		getChar();
+	}
+/*	const unordered_map<string,Token::Kind> rwMap;
+	void BoogieLexer::getSimpleIdentifier(){
+		startToken();
+		while (isSimpleIdentifierChar(curChar()))
+			getTokenChar();
+
+		endToken()
+	}*/
 
 } /* namespace BoogieParser */
 

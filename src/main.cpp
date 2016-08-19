@@ -15,7 +15,7 @@ int main(int argc,char*argv[])
 
     string bplFileName(R"(/home/uri/Downloads/boogie-master/Test/test2/FormulaTerm.bpl)");
     cout << "Parsing " << bplFileName << endl;
-    parseBoogieFile(bplFileName);
+    BoogieParser::parseBoogieFile(bplFileName);
 
     cout << "End" << endl;
     return 0;

@@ -74,16 +74,17 @@ namespace BoogieParser {
 			assign
 		};
 
-		Token(Kind _kind, const std::string& _text,const Position& _pos)
-			: kind(_kind), text(_text), pos(_pos)
+		Token(Kind _kind, const std::string& _text,const Position& _pos,const Position& _endPos)
+			: kind(_kind), text(_text), pos(_pos),endPos(_endPos)
 			  {}
 		const Kind kind;
 		const std::string text;
-		const Position pos;
+		const Position pos,endPos;
 	};
 
 	class BoogieLexer: private ParserBase {
 	public:
+		typedef ParserBase::Char Char;
 		BoogieLexer(std::istream& i);
 		virtual ~BoogieLexer();
 
@@ -93,9 +94,26 @@ namespace BoogieParser {
 		Token curToken();
 		void nextToken();
 	private:
-		Token* _curToken;
 		void getToken();
+		void getSimpleIdentifier();
+		void getQuotedIdentifier();
+		void getNumber();
+		void getStringLiteral();
+		void getSymbol();
+
 		void ensureNotDone();
+
+		void startToken();
+		Char getTokenChar();
+		void endToken(Token::Kind kind);
+
+		void skipWSs();
+
+		Token* _curToken = nullptr;
+		std::string curTokenText;
+		bool curTokenStarted = false;
+		Position curTokenStartPos;
+		Position curTokenEndPos;
 	};
 
 } /* namespace BoogieParser */

@@ -15,14 +15,11 @@ namespace BoogieParser {
 	class Position final{
 	public:
 		typedef size_t Size;
-		Position(Size _line,Size _col) : line(_line),col(_col){}
+		Position();
+		Position(Size _line,Size _col);
 		Size line;
 		Size col;
-		std::string toString() const{
-			std::stringstream s;
-			s << line + ":" + col;
-			return s.str();
-		}
+		std::string toString() const;
 	};
 } /* namespace BoogieParser */
 
