@@ -26,6 +26,9 @@ namespace BoogieParser {
                                                                                 const Position &_start)
             : LexerException(_p), start(_start) {}
 
+    BoogieLexer::EOLInStringLiteralException::EOLInStringLiteralException(const Position &_p, const Position &_start)
+            : LexerException(_p), start(_start) {}
+
     Token BoogieLexer::curToken() {
         ensureNotDone();
         if (!_curToken)
@@ -86,6 +89,9 @@ namespace BoogieParser {
             getSymbol();
     }
 
+    Position BoogieLexer::curPos() {
+        return ParserBase::curPos();
+    }
     void BoogieLexer::startToken() {
         assert(!curTokenStarted);
         curTokenStartPos = curPos();
@@ -202,7 +208,7 @@ namespace BoogieParser {
                 throw new EOLInQuotedIdentifierException(curPos(), curTokenStartPos);
             getChar();
         }
-        if (!isQuotedIdentifierStart(curChar()))
+        if (!isStringLiteralStart(curChar()))
             throw new LexerException(curPos());
         getChar();
     }

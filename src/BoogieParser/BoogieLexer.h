@@ -91,10 +91,16 @@ namespace BoogieParser {
         public:
             LexerException(const Position &_p);
         };
-
         class EOLInQuotedIdentifierException : public LexerException {
         public:
             EOLInQuotedIdentifierException(const Position &_p, const Position &_start);
+
+            const Position start;
+        };
+
+        class EOLInStringLiteralException : public LexerException {
+        public:
+            EOLInStringLiteralException(const Position &_p, const Position &_start);
 
             const Position start;
         };
