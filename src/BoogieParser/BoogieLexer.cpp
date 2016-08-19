@@ -20,6 +20,12 @@ namespace BoogieParser {
             throw new ReadPastEOFException(curPos());
     }
 
+    BoogieLexer::LexerException::LexerException(const Position &_p) : ParserException(_p) {};
+
+    BoogieLexer::EOLInQuotedIdentifierException::EOLInQuotedIdentifierException(const Position &_p,
+                                                                                const Position &_start)
+            : LexerException(_p), start(_start) {}
+
     Token BoogieLexer::curToken() {
         ensureNotDone();
         if (!_curToken)
@@ -135,17 +141,70 @@ namespace BoogieParser {
             {"finite",         Token::Kind::finiteRW},
             {"free",           Token::Kind::freeRW},
 
-
             {"bool",           Token::Kind::boolRW},
             {"int",            Token::Kind::intRW}
     };
 
+    bool isBV(const string &s) {
+        if (s.length() < 3)
+            return false;
+        if (s[0] != 'b' || s[1] != 'v')
+            return false;
+        if (s[2] == '0')
+            return s.length() == 3;
+        for (int i = 2; i < s.length(); i++)
+            if (!isdigit(s[i]))
+                return false;
+        return true;
+    }
+
+    void BoogieLexer::skipWSs() {
+        while (!done() && isspace(curChar()))
+            getChar();
+    }
     void BoogieLexer::getSimpleIdentifier() {
         startToken();
         while (isSimpleIdentifierChar(curChar()))
             getTokenChar();
 
-        endToken(rwMap.getOrElse(curTokenText, Token::Kind::identifier));
+        auto k = isBV(curTokenText) ? Token::Kind::bvx : Token::Kind::identifier;
+        endToken(rwMap.getOrElse(curTokenText, k));
+    }
+
+    void BoogieLexer::getQuotedIdentifier() {
+        if (!isQuotedIdentifierStart(curChar()))
+            throw new LexerException(curPos());
+        getChar();
+        while (true) {
+            if (done())
+                throw new ReadPastEOFException(curPos());
+            if (isQuotedIdentifierStart(curChar()))
+                break;
+            if (isEOL(curChar()))
+                throw new EOLInQuotedIdentifierException(curPos(), curTokenStartPos);
+            getChar();
+        }
+        if (!isQuotedIdentifierStart(curChar()))
+            throw new LexerException(curPos());
+        getChar();
+    }
+
+    void BoogieLexer::getStringLiteral() {
+        if (!isStringLiteralStart(curChar()))
+            throw new LexerException(curPos());
+        getChar();
+        while (true) {
+            if (done())
+                throw new ReadPastEOFException(curPos());
+            if (isQuotedIdentifierStart(curChar()))
+                break;
+            if (isEOL(curChar()))
+                throw new EOLInQuotedIdentifierException(curPos(), curTokenStartPos);
+            getChar();
+        }
+        if (!isQuotedIdentifierStart(curChar()))
+            throw new LexerException(curPos());
+        getChar();
     }
 
 } /* namespace BoogieParser */

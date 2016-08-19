@@ -86,6 +86,19 @@ namespace BoogieParser {
 	class BoogieLexer: private ParserBase {
 	public:
 		typedef ParserBase::Char Char;
+
+        class LexerException : public ParserException {
+        public:
+            LexerException(const Position &_p);
+        };
+
+        class EOLInQuotedIdentifierException : public LexerException {
+        public:
+            EOLInQuotedIdentifierException(const Position &_p, const Position &_start);
+
+            const Position start;
+        };
+
 		BoogieLexer(std::istream& i);
 		virtual ~BoogieLexer();
 

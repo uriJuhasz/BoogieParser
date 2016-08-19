@@ -54,13 +54,12 @@ namespace BoogieParser {
 			void popPos();
 			void discardPopPos();
 
-		//    class
+        static bool isEOL(Char c);
 		private:
 			class CPos;
 			bool bufDone() const;
 			void readToBuf();
 
-			static bool isEOL(Char c);
 
 
 			std::istream& f;
