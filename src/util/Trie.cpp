@@ -10,15 +10,12 @@
 namespace BoogieParser
 {
 
-  Trie::Trie ()
+  template<typename K,typename V> Trie<K,V>::Trie ()
   {
-    // TODO Auto-generated constructor stub
-
   }
 
-  Trie::~Trie ()
+  template<typename K,typename V> Trie<K,V>::~Trie ()
   {
-    // TODO Auto-generated destructor stub
   }
 
 } /* namespace BoogieParser */

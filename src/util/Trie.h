@@ -25,7 +25,8 @@ namespace BoogieParser
     bool tryGet(const Str& s,V& v);
     V get(const Str& s);
   private:
-
+    class Node;
+    Node* head;
   };
 
 } /* namespace BoogieParser */
