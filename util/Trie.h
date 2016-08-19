@@ -18,13 +18,13 @@ namespace BoogieParser
   public:
     typedef K Key;
     typedef V Value;
-    typedef std::string<K> Str;
+    typedef std::basic_string<K> Str;
     Trie ();
-    virtual
-    ~Trie ();
+    virtual ~Trie ();
     void insert(const Str& s,V v);
     bool tryGet(const Str& s,V& v);
     V get(const Str& s);
+  private:
 
   };
 
