@@ -85,12 +85,12 @@ namespace BoogieParser {
 	void BoogieLexer::endToken(Token::Kind kind){
 		assert(curTokenStarted);
 		curTokenStarted=false;
-		curToken = new Token(kind,curTokenText,curTokenStartPos,curTokenEndPos);
+		_curToken = new Token(kind,curTokenText,curTokenStartPos,curTokenEndPos);
 	}
-	void BoogieLexer::getTokenChar(){
-		std::assert(curTokenStarted);
+	BoogieLexer::Char BoogieLexer::getTokenChar(){
+		assert(curTokenStarted);
 		curTokenEndPos = curPos();
-		getChar();
+		return getChar();
 	}
 /*	const unordered_map<string,Token::Kind> rwMap;
 	void BoogieLexer::getSimpleIdentifier(){
